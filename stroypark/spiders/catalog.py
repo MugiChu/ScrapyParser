@@ -5,13 +5,20 @@ class CatalogSpider(scrapy.Spider):
     name = 'catalog'
     allowed_domains = ['stroypark.su']
     start_urls = ['http://stroypark.su/']
-    pages_count = 6  # сколько всего страниц в категории
+    pages_count = 100  # сколько всего страниц в категории
 
     def start_requests(self):
-        for page in range(0, 1 + self.pages_count):
-            urls = 'https://stroypark.su/catalog/interer/oboi/fotooboi'  # ссылка
-            url = f'{urls}?page={page}'
-            yield scrapy.Request(url, callback=self.parse_pages)
+        def lines(nm):
+            with open(nm, 'r', encoding='utf8') as f:
+                for line in f:
+                    yield line
+
+        for link in lines('/media/mugichu/Transcend/ParserScrapy/stroypark/stroypark/list.txt'):
+            # вбивайте ссылки в файл построчно
+            for page in range(0, 1 + self.pages_count):
+                urls = link
+                url = f'{urls}?page={page}'
+                yield scrapy.Request(url, callback=self.parse_pages)
             # ставиться после url meta={'proxy': '217.6.21.170:8080'},
             # так как ip сервера Германии то происходят timeouts если и брать прокси то из РФ
             # в meta вписан прокси через который идет запрос
